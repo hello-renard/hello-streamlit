@@ -6,9 +6,9 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
-from config import OPENAI_API_KEY
 
-llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY,model="gpt-4-turbo-preview",temperature=0.7)
+
+llm = ChatOpenAI(openai_api_key=st.secrets["openai_api_key"],model="gpt-4-turbo-preview",temperature=0.7)
 
 LOGGER = get_logger(__name__)
 st.write("# Welcome to hello again Push AI")
