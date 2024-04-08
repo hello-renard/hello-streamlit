@@ -9,6 +9,7 @@ from langchain_anthropic import ChatAnthropic
 
 
 llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model="gpt-4-turbo-preview",temperature=0.7)
+llm
 LOGGER = get_logger(__name__)
 st.write("# Welcome to hello again Push AI")
 website = st.text_input("Please enter your Website",help="Enter a website in the pattern of https://www.website.at")
