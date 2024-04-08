@@ -3,3 +3,10 @@ numpy
 pandas
 pydeck
 streamlit
+langchain
+langchain-openai
+playwright
+beautifulsoup4
+langchain-community
+html2text
+langchain-anthropic
