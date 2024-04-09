@@ -6,15 +6,25 @@ from langchain_openai import ChatOpenAI
 from langchain_openai import OpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
+from langchain_community.callbacks import get_openai_callback
 
 
-llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model="gpt-4-turbo-preview",temperature=0.7)
+
 LOGGER = get_logger(__name__)
 st.write("# Welcome to hello again Push AI")
 website = st.text_input("Bitte gib deine Webseite ein (inkl. https://)",help="Enter a website in the pattern of https://www.website.at")
 inputOccasion = st.text_input("Aktion oder Anlass der Nachricht",value="kein spezifischer Anlass")
 inputGoal = st.text_input("Ziel der Nachricht",value="Kunden zurück ins Geschäft holen")
 
+modelOption = st.selectbox(
+   "Model",
+   ("gpt-4-turbo-preview", "gpt-3.5-turbo-0125"),
+   index=0,
+   placeholder="Select your model",
+)
+
+
+llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
 #Fetch website
 
 result = st.button("Start")
@@ -38,8 +48,8 @@ if result:
   messages = chat_template.format_messages(
   websiteText=docs_transformed)
 
-
-  companyData = llm.invoke(messages).content
+  with get_openai_callback() as cb1:
+      companyData = llm.invoke(messages).content
   v_occasion = "Aktion oder Anlass: " + inputOccasion +"\n"
   v_goal ="Ziel der Nachricht: Kunden zurück ins Geschäft holen" + inputGoal + "\n" 
 
@@ -58,6 +68,14 @@ if result:
   occasion=v_occasion,
   goal=v_goal)
 
-  proposedMessages = llm.invoke(messages)
+  with get_openai_callback() as cb2:
+      proposedMessages = llm.invoke(messages)
   st.markdown(proposedMessages.content)
+  with st.expander("Verwendeter Company Context"):
+    st.markdown(companyData)
+  with st.expander("Token Count für Company"):
+    st.markdown(cb1)
+  with st.expander("Token Count für Messages"):
+    st.markdown(cb2)
+  
   
