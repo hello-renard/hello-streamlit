@@ -9,10 +9,11 @@ from langchain_anthropic import ChatAnthropic
 
 
 llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model="gpt-4-turbo-preview",temperature=0.7)
-llm
 LOGGER = get_logger(__name__)
 st.write("# Welcome to hello again Push AI")
-website = st.text_input("Please enter your Website",help="Enter a website in the pattern of https://www.website.at")
+website = st.text_input("Bitte gib deine Webseite ein (inkl. https://)",help="Enter a website in the pattern of https://www.website.at")
+inputOccasion = st.text_input("Aktion oder Anlass der Nachricht",value="kein spezifischer Anlass")
+inputGoal = st.text_input("Ziel der Nachricht",value="Kunden zurück ins Geschäft holen")
 
 #Fetch website
 
@@ -39,8 +40,8 @@ if result:
 
 
   companyData = llm.invoke(messages).content
-  v_occasion = "Aktion oder Anlass: kein spezieller Anlass"
-  v_goal ="Ziel der Nachricht: Kunden zurück ins Geschäft holen\n"
+  v_occasion = "Aktion oder Anlass: " + inputOccasion +"\n"
+  v_goal ="Ziel der Nachricht: Kunden zurück ins Geschäft holen" + inputGoal + "\n" 
 
   chat_template = ChatPromptTemplate.from_messages(
     [
