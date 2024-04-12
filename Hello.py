@@ -1,4 +1,5 @@
 import streamlit as st
+import time 
 from streamlit.logger import get_logger
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_transformers import Html2TextTransformer
@@ -18,13 +19,15 @@ inputGoal = st.text_input("Ziel der Nachricht",value="Kunden zurück ins Geschä
 
 modelOption = st.selectbox(
    "Model",
-   ("gpt-4-turbo-preview", "gpt-3.5-turbo-0125"),
+   ("gpt-4-turbo", "gpt-3.5-turbo-0125","claude-3-opus-20240229","claude-3-sonnet-20240229","claude-3-haiku-20240307"),
    index=0,
    placeholder="Select your model",
 )
 
-
-llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
+if "gpt-4-turbo" in modelOption: 
+    llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
+else:
+   llm = ChatAnthropic(anthropic_api_key=st.secrets.anthropic_api_key,model=modelOption,temperature=0.7)
 #Fetch website
 
 result = st.button("Start")
@@ -47,15 +50,17 @@ if result:
 
   messages = chat_template.format_messages(
   websiteText=docs_transformed)
+  tsStart = time.time()
 
   with get_openai_callback() as cb1:
       companyData = llm.invoke(messages).content
-  v_occasion = "Aktion oder Anlass: " + inputOccasion +"\n"
-  v_goal ="Ziel der Nachricht: Kunden zurück ins Geschäft holen" + inputGoal + "\n" 
+      LOGGER.warning("Company Context done after " + str(time.time()-tsStart) + "seconds")
+  v_occasion = "<Wichtige Aktion oder Anlass>" + "\n##" + inputOccasion +"##</Wichtige Aktion oder Anlass>" +"\n"
+  v_goal ="<Ziel der Nachricht>" + "\n##" + inputGoal + "##</Ziel der Nachricht>" + "\n" 
 
   chat_template = ChatPromptTemplate.from_messages(
     [
-        ("system", "Du bist ein Kommunikationsspezialist und schreibst 3 Vorschläge einer maßgeschneiderte Push Nachricht auf Basis der vom Nutzer bereitgestellten Unternehmensdetails. Beachte die Details um eine möglichst effektive, wahrheitsgemäße Nachricht zugeschnitten auf das Unternehmen zu verfassen. Jede Push Nachricht soll aus einem title mit maximal 70 Zeichen und einer description mit maximal 150 Zeichen bestehen. Vermeide Angebote, Vorteile oder Aktionen vorzuschlagen die nicht aus den angegebenen Inhalten klar und deutlich hervorgehen. \n\nAusgabeformat:\nBegründe jeden deiner Vorschläge mit einem reasoning mit maximal 150 zeichen. Die Ausabe muss in einem JSON Objekt 'pushmessages' mit den 3 Vorschlägen als Objekten. Jedes Objekt enthält eine ID (1-3) title, description und reasoning."),
+        ("system", "Du bist ein Kommunikationsspezialist und schreibst 3 Vorschläge einer maßgeschneiderte Push Nachricht auf Basis der vom Nutzer bereitgestellten Unternehmensdetails. Beachte die Details um eine möglichst effektive, wahrheitsgemäße Nachricht zugeschnitten auf das Unternehmen zu verfassen und beziehe unbedingt wenn verfügbar spezielle Aktionen oder Anlässe im Title jeder deiner Vorschläge ein. Dabei sollen nur die wichtigsten Top 3 der Dienstleistungen, Produkte, Vorteile und USPs aus den Unternehmensdetails einbezogen werden. Jede Push Nachricht soll aus einem title mit maximal 50 Zeichen und einer description mit maximal 120 Zeichen bestehen. Vermeide Angebote, Vorteile oder Aktionen vorzuschlagen die nicht aus den angegebenen Unternehmensdetails klar und deutlich hervorgehen. \n\nAusgabeformat:\nBegründe jeden deiner Vorschläge mit einem reasoning mit maximal 150 zeichen. Die Ausgabe muss im Markdown Format mit einem JSON Objekt 'pushmessages' mit den 3 Vorschlägen als Objekten. Jedes Objekt enthält eine ID (1-3) title, description und reasoning."),
         ("human", "{companyDetails}" 
         +  "{occasion}"
         +  "{goal}"
@@ -67,9 +72,11 @@ if result:
   companyDetails=companyData,
   occasion=v_occasion,
   goal=v_goal)
+  tsStart = time.time()
 
   with get_openai_callback() as cb2:
       proposedMessages = llm.invoke(messages)
+      LOGGER.warning("Messages done after " + str(time.time()-tsStart) + "seconds")
   st.markdown(proposedMessages.content)
   with st.expander("Verwendeter Company Context"):
     st.markdown(companyData)
@@ -78,4 +85,24 @@ if result:
   with st.expander("Token Count für Messages"):
     st.markdown(cb2)
   
+  v_messagesToValidate = proposedMessages.content
+
+  llmValidator = ChatAnthropic(model="claude-3-haiku-20240307", anthropic_api_key=st.secrets.anthropic_api_key, temperature=0)
+
+  chat_template = ChatPromptTemplate.from_messages(
+  [
+      ("system", "Du erhältst vom Nutzer bis zu 3 Vorschläge für eine Push Benachrichtigung für ein Unternehmen in Form eines JSON Objektes. Bewerte jede dieser Pushbenachrichtungen auf Basis folgender Kriterien:\n <Kriterien>Beachte das keine Inhalte enthalten sind, die so nicht aus den bereitgestellten Unternehmensdetails oder Aktionen, Anlass oder Ziel der Nachricht abgeleitet werden können. Wenn kein Anlass, Aktion oder Ziel in den Unternehmensdetails verfügbar ist, müssen diese auch nicht in den Pushnachrichten bewertet werden. Wenn spezielle Aktionen oder ein Anlass enthalten sind müssen diese in den Nachrichten vorkommen.\nBeachte aber besonders das keine Promotions, Rabatte oder Aktionen enthalten sind die so nicht aus den Unternehmensdetails und Aktionen abgeleitet werden können.\n Beachte ebenso, dass die Nachrichten das Zielpublikum möglichst breit ansprechen sollen.</Kriterien>\n\n<UNTERNEHMENSDETAILS>{companyDetails}\n{occasion}\n{goal}</UNTERNEHMENSDETAILS>\n\nBewertungsskala:\nBewerte in Schulnoten, wobei Note 1 für hervorragende Erfüllung aller Kriterien steht zum Beispiel angegebene Aktionen oder Anlässe im title einbezogen werden. Note 3 wenn wenig Relevanz zu den angegebenen Unternehmensdaten und genannte Aktionen oder Anlässe nicht im titel genannt werden und Note 5 für eine Missachtung der Kriterien, wie zb. 'Aktionen oder Rabatte werden erfunden und sind nicht aus den angegebenen Unternehmensdetails ableitbar' oder kein relevanter Inhalt\n\n Ausgabeformat: Füge die Bewertung mit einem Attribut 'rating' und deine Begründung mit einem Attribut 'critique' jedem Push Benachrichtigungsobjektes hinzu"),
+      ("human", "Hier sind die Push Benachrichtigungen in einem JSON Objekt: \n{messagesToValidate}")
+  ]
+)
+
+  messages = chat_template.format_messages(
+      companyDetails=companyData,
+      occasion=v_occasion,
+      goal=v_goal,
+      messagesToValidate=v_messagesToValidate)
+  LOGGER.warning(messages)
+
+  validation = llmValidator.invoke(messages)
+  st.markdown(validation.content)
   
