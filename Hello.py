@@ -27,7 +27,7 @@ modelOption = st.selectbox(
 
 if "gpt-4-turbo" in modelOption: 
     llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
-elif "llama3-70b-8192" OR "mixtral-8x7b-32768" in modelOption:
+elif "llama3-70b-8192" in modelOption OR "mixtral-8x7b-32768" in modelOption:
     llm = ChatGroq(groq_api_key=st.secrets.groq_api_key, model_name=modelOption,temperature=0.7)
 else:  
    llm = ChatAnthropic(anthropic_api_key=st.secrets.anthropic_api_key,model=modelOption,temperature=0.7)
