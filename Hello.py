@@ -44,7 +44,7 @@ if result:
   docs_transformed = html2text.transform_documents(docs)
   chat_template = ChatPromptTemplate.from_messages(
     [
-        ("system", "Ein Nutzer stellt dir extrahierte Texte einer Webseite eines Unterhehmens zur Verfügung. Deine Aufgabe ist es folgende Informationen herauszufinden:"
+        ("system", "Ein Nutzer stellt dir extrahierte Texte einer Webseite eines Unterhehmens zur Verfügung. Deine Aufgabe ist es folgende Informationen herauszufinden und in deutscher Sprache anzuführen:"
         +"#Name des Unternehmens:# (Wähle dabei den Namen den das Unternehmen in seiner Kommunikation verwendet)\n" 
         +"#Liste angebotener Dienstleistungen und Produkte:# (Wähle dabei maximal 5 Überkategorien\n"
         +"#Vorteile und USPS:# (Wähle dabei die relevantesten USPs. Maximal 4)\n"+
