@@ -59,7 +59,7 @@ if result:
 
   with get_openai_callback() as cb1:
       companyData = llm.invoke(messages).content
-      companyContextTiming = "Company Context done after " + str(time.time()- tsStartCompanyContext) + "seconds")
+      companyContextTiming = "Company Context done after " + str(time.time()- tsStartCompanyContext) + "seconds"
   v_occasion = "<Wichtige Aktion oder Anlass>" + "\n##" + inputOccasion +"##</Wichtige Aktion oder Anlass>" +"\n"
   v_goal ="<Ziel der Nachricht>" + "\n##" + inputGoal + "##</Ziel der Nachricht>" + "\n" 
 
