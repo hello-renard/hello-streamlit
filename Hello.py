@@ -8,6 +8,7 @@ from langchain_openai import OpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_anthropic import ChatAnthropic
 from langchain_community.callbacks import get_openai_callback
+from langchain_groq import ChatGroq
 
 
 
@@ -19,15 +20,19 @@ inputGoal = st.text_input("Ziel der Nachricht",value="Kunden zurück ins Geschä
 
 modelOption = st.selectbox(
    "Model",
-   ("gpt-4-turbo", "gpt-3.5-turbo-0125","claude-3-opus-20240229","claude-3-sonnet-20240229","claude-3-haiku-20240307"),
+   ("gpt-4-turbo","claude-3-opus-20240229","claude-3-sonnet-20240229","claude-3-haiku-20240307","llama3-70b-8192"),
    index=0,
    placeholder="Select your model",
 )
 
 if "gpt-4-turbo" in modelOption: 
     llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
-else:
+elif "llama3-70b-8192" in modelOption:
+    llm = ChatGroq(groq_api_key=st.secrets.groq_api_key, model_name=modelOption,temperature=0.7)
+else:  
    llm = ChatAnthropic(anthropic_api_key=st.secrets.anthropic_api_key,model=modelOption,temperature=0.7)
+
+
 #Fetch website
 
 result = st.button("Start")

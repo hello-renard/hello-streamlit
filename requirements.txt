@@ -10,3 +10,4 @@ beautifulsoup4
 langchain-community
 html2text
 langchain-anthropic
+langchain-groq
