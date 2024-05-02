@@ -55,11 +55,11 @@ if result:
 
   messages = chat_template.format_messages(
   websiteText=docs_transformed)
-  tsStart = time.time()
+  tsStartCompanyContext = time.time()
 
   with get_openai_callback() as cb1:
       companyData = llm.invoke(messages).content
-      LOGGER.warning("Company Context done after " + str(time.time()-tsStart) + "seconds")
+      companyContextTiming = "Company Context done after " + str(time.time()- tsStartCompanyContext) + "seconds")
   v_occasion = "<Wichtige Aktion oder Anlass>" + "\n##" + inputOccasion +"##</Wichtige Aktion oder Anlass>" +"\n"
   v_goal ="<Ziel der Nachricht>" + "\n##" + inputGoal + "##</Ziel der Nachricht>" + "\n" 
 
@@ -81,10 +81,12 @@ if result:
 
   with get_openai_callback() as cb2:
       proposedMessages = llm.invoke(messages)
-      LOGGER.warning("Messages done after " + str(time.time()-tsStart) + "seconds")
+      messageTiming = "Messages done after " + str(time.time()-tsStart) + "seconds"
   st.markdown(proposedMessages.content)
+  st.markdown(messageTiming)
   with st.expander("Verwendeter Company Context"):
     st.markdown(companyData)
+    st.markdown(companyContextTiming)
   with st.expander("Token Count für Company"):
     st.markdown(cb1)
   with st.expander("Token Count für Messages"):
