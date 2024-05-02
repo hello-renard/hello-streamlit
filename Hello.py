@@ -56,6 +56,7 @@ if result:
   messages = chat_template.format_messages(
   websiteText=docs_transformed)
   tsStartCompanyContext = time.time()
+  tsStart = time.time()
 
   with get_openai_callback() as cb1:
       companyData = llm.invoke(messages).content
@@ -77,7 +78,7 @@ if result:
   companyDetails=companyData,
   occasion=v_occasion,
   goal=v_goal)
-  tsStart = time.time()
+  
 
   with get_openai_callback() as cb2:
       proposedMessages = llm.invoke(messages)
