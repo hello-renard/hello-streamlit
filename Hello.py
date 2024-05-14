@@ -20,12 +20,12 @@ inputGoal = st.text_input("Ziel der Nachricht",value="Kunden zurück ins Geschä
 
 modelOption = st.selectbox(
    "Model",
-   ("gpt-4-turbo","claude-3-opus-20240229","claude-3-sonnet-20240229","claude-3-haiku-20240307","llama3-70b-8192","mixtral-8x7b-32768"),
+   ("gpt-4-turbo","claude-3-opus-20240229","claude-3-sonnet-20240229","claude-3-haiku-20240307","llama3-70b-8192","mixtral-8x7b-32768","gpt-4o"),
    index=0,
    placeholder="Select your model",
 )
 
-if "gpt-4-turbo" in modelOption: 
+if "gpt-4-turbo" in modelOption or "gpt-4o" in modelOption: 
     llm = ChatOpenAI(openai_api_key=st.secrets.openai_api_key,model=modelOption,temperature=0.7)
 elif "llama3-70b-8192" in modelOption or "mixtral-8x7b-32768" in modelOption:
     llm = ChatGroq(groq_api_key=st.secrets.groq_api_key, model_name=modelOption,temperature=0.7)
